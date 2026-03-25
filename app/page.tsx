@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from './utils/supabase'
+// ステップ1で設定したパス（@/）を使ってインポートします
+import { createClient } from '@/app/utils/supabase'
 
 export default function Home() {
   const [supabase] = useState(() => createClient())
@@ -37,7 +38,7 @@ export default function Home() {
     }
   }
 
-  // 3. データを削除する (追加機能！)
+  // 3. データを削除する
   const deleteItem = async (id: string) => {
     const { error } = await supabase
       .from('transactions')
@@ -48,7 +49,7 @@ export default function Home() {
     else fetchTransactions()
   }
 
-  // 4. 合計金額を計算する (追加機能！)
+  // 4. 合計金額を計算する
   const totalBalance = items.reduce((sum, item) => sum + item.amount, 0)
 
   return (
