@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-// ステップ1で設定したパス（@/）を使ってインポートします
-import { createClient } from '@/app/utils/supabase'
+// エラー回避のため、確実な相対パス（同じフォルダ内のutilsを指す）に変更しました
+import { createClient } from './utils/supabase'
 
 export default function Home() {
   const [supabase] = useState(() => createClient())
