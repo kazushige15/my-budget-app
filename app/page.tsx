@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from './utils/supabase'
-// グラフ用のコンポーネントをインポート
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function Home() {
@@ -25,7 +24,7 @@ export default function Home() {
       .select('*')
       .gte('created_at', startDate)
       .lte('created_at', endDate)
-      .order('created_at', { ascending: true }) // グラフ用に日付順
+      .order('created_at', { ascending: true })
     
     if (error) console.error(error)
     else if (data) setItems(data)
@@ -35,7 +34,6 @@ export default function Home() {
     fetchTransactions(mode === 'input' ? now.getFullYear() : viewYear, mode === 'input' ? now.getMonth() : viewMonth)
   }, [mode, viewMonth, viewYear])
 
-  // --- グラフ用データの整形 ---
   const chartData = useMemo(() => {
     const dailyData: { [key: string]: number } = {}
     items.forEach(item => {
@@ -67,64 +65,85 @@ export default function Home() {
   const totalBalance = items.reduce((sum, item) => sum + item.amount, 0)
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-4 sm:p-12 bg-slate-100 text-slate-800">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col h-[90vh]">
+    // ★ 全体をパステルピンクの背景に
+    <main className="flex min-h-screen flex-col items-center p-4 sm:p-12 bg-pink-50 text-pink-950 font-mono">
+      {/* ★ 強い丸みとピンクの影 */}
+      <div className="bg-white rounded-[40px] shadow-2xl shadow-pink-200 w-full max-w-md overflow-hidden flex flex-col h-[90vh] border-4 border-pink-100">
         
-        <div className="bg-slate-800 p-6 text-white text-center">
-          <h1 className="text-xl font-bold tracking-widest">MY BUDGET</h1>
+        {/* ★ ヘッダーをピンクに、豚ちゃんアイコンを追加 */}
+        <div className="bg-pink-500 p-6 text-white text-center border-b-4 border-pink-600">
+          <h1 className="text-2xl font-black tracking-widest flex items-center justify-center gap-3">
+            <span>🐽</span>
+            PIGGY BANK
+            <span>🐽</span>
+          </h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {mode === 'input' ? (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="text-center py-8 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <p className="text-xs text-emerald-600 font-bold mb-1">今月の収支</p>
-                <p className="text-4xl font-black text-emerald-700">¥{totalBalance.toLocaleString()}</p>
+            <div className="space-y-8 animate-in fade-in duration-500">
+              {/* ★ 収支表示をぷっくりと */}
+              <div className="text-center py-10 bg-pink-100 rounded-3xl border-4 border-pink-200 shadow-inner">
+                <p className="text-xs text-pink-600 font-bold mb-2 uppercase tracking-widest">今月のちょきん</p>
+                <p className="text-5xl font-black text-pink-700">¥{totalBalance.toLocaleString()}</p>
               </div>
 
-              <div className="space-y-3">
-                <input type="text" placeholder="品目" className="w-full p-4 bg-slate-50 border rounded-xl outline-none" value={title} onChange={(e) => setTitle(e.target.value)} />
-                <input type="number" placeholder="金額" className="w-full p-4 bg-slate-50 border rounded-xl outline-none" value={amount} onChange={(e) => setAmount(e.target.value)} />
-                <button onClick={addItem} className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg transition active:scale-95">記録する</button>
+              {/* ★ 入力フォームを丸く、ピンクのアクセント */}
+              <div className="space-y-4">
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">📝</span>
+                  <input type="text" placeholder="なにに使った？" className="w-full p-5 pl-12 bg-white border-2 border-pink-200 rounded-full outline-none focus:ring-4 focus:ring-pink-300 placeholder:text-pink-300 transition" value={title} onChange={(e) => setTitle(e.target.value)} />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">💰</span>
+                  <input type="number" placeholder="いくら？ (支出はマイナス)" className="w-full p-5 pl-12 bg-white border-2 border-pink-200 rounded-full outline-none focus:ring-4 focus:ring-pink-300 placeholder:text-pink-300 transition" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                </div>
+                <button onClick={addItem} className="w-full bg-pink-600 text-white py-5 rounded-full font-black text-lg shadow-lg shadow-pink-300 transition hover:bg-pink-700 active:scale-95 flex items-center justify-center gap-3">
+                  <span>🐷</span>
+                  チャリン！と記録
+                </button>
               </div>
             </div>
           ) : (
             <div className="space-y-6 animate-in slide-in-from-right duration-300">
-              <div className="flex justify-between items-center py-2 border-b">
-                <button onClick={() => setViewMonth(v => v - 1)} className="p-2">◀</button>
-                <span className="font-bold text-lg">{viewYear}年 {viewMonth + 1}月</span>
-                <button onClick={() => setViewMonth(v => v + 1)} className="p-2">▶</button>
+              {/* ★ カレンダーコントローラー */}
+              <div className="flex justify-between items-center py-3 px-4 bg-pink-50 rounded-full border-2 border-pink-100">
+                <button onClick={() => setViewMonth(v => v - 1)} className="p-2 text-pink-600 text-xl hover:scale-125 transition">◀</button>
+                <span className="font-bold text-lg text-pink-900">{viewYear}年 {viewMonth + 1}月</span>
+                <button onClick={() => setViewMonth(v => v + 1)} className="p-2 text-pink-600 text-xl hover:scale-125 transition">▶</button>
               </div>
 
-              {/* --- グラフ表示エリア --- */}
-              <div className="h-48 w-full bg-slate-50 rounded-2xl p-2">
-                <p className="text-[10px] font-bold text-slate-400 mb-2 px-2">日別収支推移</p>
+              {/* ★ グラフをピンクベースに */}
+              <div className="h-48 w-full bg-pink-50 rounded-3xl p-4 border-2 border-pink-100">
+                <p className="text-[10px] font-bold text-pink-400 mb-2 px-2 uppercase tracking-widest">Daily Report</p>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="day" fontSize={10} tickMargin={5} />
-                    <YAxis fontSize={10} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="amount" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#fbcfe8" />
+                    <XAxis dataKey="day" fontSize={10} tickMargin={5} stroke="#db2777" />
+                    <YAxis fontSize={10} stroke="#db2777" />
+                    <Tooltip contentStyle={{backgroundColor: '#fff', border: '2px solid #fbcfe8', borderRadius: '10px'}} />
+                    {/* ★ グラフの線を濃いピンクに */}
+                    <Line type="monotone" dataKey="amount" stroke="#db2777" strokeWidth={4} dot={{ r: 5, stroke: '#db2777', strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 7, stroke: '#db2777', fill: '#fff' }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
               
-              <div className="text-center py-4 bg-slate-100 rounded-xl">
-                <p className="text-[10px] text-slate-500 font-bold uppercase">Monthly Total</p>
-                <p className="text-2xl font-black">¥{totalBalance.toLocaleString()}</p>
+              <div className="text-center py-4 bg-pink-100 rounded-2xl border-2 border-pink-200">
+                <p className="text-[10px] text-pink-500 font-bold uppercase tracking-widest">Monthly Total</p>
+                <p className="text-2xl font-black text-pink-700">¥{totalBalance.toLocaleString()}</p>
               </div>
 
-              <div className="space-y-2">
+              {/* ★ リストアイテムを丸く、かわいく */}
+              <div className="space-y-3">
                 {items.map(item => (
-                  <div key={item.id} className="flex justify-between items-center p-3 border-b border-slate-50">
+                  <div key={item.id} className="flex justify-between items-center p-5 bg-white rounded-2xl border-2 border-pink-100 shadow-sm hover:border-pink-300 transition">
                     <div>
-                      <p className="font-medium text-sm text-slate-700">{item.title}</p>
-                      <p className="text-[10px] text-slate-400">{new Date(item.created_at).toLocaleDateString()}</p>
+                      <p className="font-bold text-pink-950">{item.title}</p>
+                      <p className="text-[10px] text-pink-400">{new Date(item.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`font-bold ${item.amount >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{item.amount > 0 ? '+' : ''}{item.amount.toLocaleString()}</span>
-                      <button onClick={() => deleteItem(item.id)} className="text-slate-200 hover:text-rose-400 transition">✕</button>
+                    <div className="flex items-center gap-4">
+                      <span className={`font-black text-lg ${item.amount >= 0 ? 'text-pink-500' : 'text-pink-700'}`}>{item.amount > 0 ? '+' : ''}{item.amount.toLocaleString()}</span>
+                      <button onClick={() => deleteItem(item.id)} className="text-pink-200 hover:text-pink-600 transition text-xl">✕</button>
                     </div>
                   </div>
                 ))}
@@ -133,14 +152,15 @@ export default function Home() {
           )}
         </div>
 
-        <div className="bg-white border-t flex h-20 shadow-inner">
-          <button onClick={() => setMode('input')} className={`flex-1 flex flex-col items-center justify-center gap-1 ${mode === 'input' ? 'text-slate-800' : 'text-slate-400'}`}>
-            <span className="text-xl">📝</span>
-            <span className="text-[10px] font-bold">入力</span>
+        {/* ★ ナビゲーションをピンクに */}
+        <div className="bg-pink-50 border-t-4 border-pink-100 flex h-24 shadow-inner">
+          <button onClick={() => setMode('input')} className={`flex-1 flex flex-col items-center justify-center gap-2 ${mode === 'input' ? 'text-pink-600' : 'text-pink-300'} hover:text-pink-500 transition`}>
+            <span className="text-3xl">📝</span>
+            <span className="text-xs font-bold uppercase tracking-widest">いれる</span>
           </button>
-          <button onClick={() => setMode('history')} className={`flex-1 flex flex-col items-center justify-center gap-1 ${mode === 'history' ? 'text-slate-800' : 'text-slate-400'}`}>
-            <span className="text-xl">📈</span>
-            <span className="text-[10px] font-bold">履歴</span>
+          <button onClick={() => setMode('history')} className={`flex-1 flex flex-col items-center justify-center gap-2 ${mode === 'history' ? 'text-pink-600' : 'text-pink-300'} hover:text-pink-500 transition`}>
+            <span className="text-3xl">📈</span>
+            <span className="text-xs font-bold uppercase tracking-widest">みる</span>
           </button>
         </div>
       </div>
