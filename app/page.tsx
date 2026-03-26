@@ -9,28 +9,29 @@ export default function Home() {
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   
-  // ★ 追加：現在表示する「月」を管理（初期値は今の月）
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  // 現在の日付を取得（日本時間の計算用）
+  const now = new Date()
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth())
+  const [currentYear, setCurrentYear] = useState(now.getFullYear())
 
-  // 1. データを読み込む（月で絞り込み）
+  // 1. データを読み込む（選択された月の範囲で絞り込み）
   const fetchTransactions = async () => {
-    // その月の開始日と終了日を計算
-    const startDate = new Date(currentYear, currentMonth, 1).toISOString()
+    // 選択された月の「1日 00:00:00」
+    const startDate = new Date(currentYear, currentMonth, 1, 0, 0, 0).toISOString()
+    // 選択された月の「末日 23:59:59」
     const endDate = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59).toISOString()
 
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
-      .gte('created_at', startDate) // 開始日より後
-      .lte('created_at', endDate)   // 終了日より前
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
       .order('created_at', { ascending: false })
     
     if (error) console.error('Error:', error)
     else if (data) setItems(data)
   }
 
-  // ★ currentMonth か currentYear が変わるたびに再読み込み
   useEffect(() => {
     fetchTransactions()
   }, [currentMonth, currentYear])
@@ -38,13 +39,26 @@ export default function Home() {
   // 2. データを追加する
   const addItem = async () => {
     if (!title || !amount) return alert('入力してください！')
+
+    // ★重要：サーバーの時間（UTC）に任せず、ブラウザ側の現在時刻を明示的に送る
+    const createdAt = new Date().toISOString()
+
     const { error } = await supabase
       .from('transactions')
-      .insert([{ title, amount: Number(amount) }])
+      .insert([{ 
+        title, 
+        amount: Number(amount),
+        created_at: createdAt 
+      }])
 
-    if (error) alert('保存に失敗しました')
-    else {
-      setTitle(''); setAmount(''); fetchTransactions()
+    if (error) {
+      console.error('Error inserting:', error)
+      alert('保存に失敗しました')
+    } else {
+      setTitle('')
+      setAmount('')
+      // 反映を確実にするため、少し待ってから再読み込み
+      setTimeout(() => fetchTransactions(), 300)
     }
   }
 
@@ -75,13 +89,17 @@ export default function Home() {
           📊 My Budget
         </h1>
 
-        {/* ★ 追加：月切り替えコントローラー */}
+        {/* 月切り替えコントローラー */}
         <div className="flex justify-between items-center mb-6 bg-slate-50 p-2 rounded-lg border">
-          <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-200 rounded-md transition">◀</button>
-          <span className="font-bold text-lg">{currentYear}年 {currentMonth + 1}月</span>
-          <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-200 rounded-md transition">▶</button>
+          <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-200 rounded-md transition text-xl">◀</button>
+          <div className="text-center">
+            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest">{currentYear}</span>
+            <span className="font-bold text-xl text-slate-700">{currentMonth + 1}月</span>
+          </div>
+          <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-200 rounded-md transition text-xl">▶</button>
         </div>
 
+        {/* 合計表示 */}
         <div className={`p-6 rounded-xl mb-8 text-center shadow-inner ${totalBalance >= 0 ? 'bg-emerald-50' : 'bg-rose-50'}`}>
           <p className="text-xs font-bold text-slate-400 uppercase mb-1">{currentMonth + 1}月の収支合計</p>
           <p className={`text-4xl font-black ${totalBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -89,18 +107,19 @@ export default function Home() {
           </p>
         </div>
         
+        {/* 入力フォーム */}
         <div className="space-y-4 mb-10 bg-slate-50 p-4 rounded-xl border border-slate-100">
           <input 
             type="text" 
             placeholder="何に使った？" 
-            className="w-full p-3 border rounded-lg shadow-sm outline-none"
+            className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <input 
             type="number" 
-            placeholder="金額" 
-            className="w-full p-3 border rounded-lg shadow-sm outline-none"
+            placeholder="金額 (支出はマイナス)" 
+            className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
@@ -112,14 +131,15 @@ export default function Home() {
           </button>
         </div>
 
+        {/* 履歴リスト */}
         <div className="space-y-3">
           <h2 className="font-bold text-sm text-slate-400 ml-1">{currentMonth + 1}月の履歴</h2>
           <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
             {items.length === 0 ? (
-              <p className="text-center text-slate-400 py-4 text-sm">データがありません</p>
+              <p className="text-center text-slate-400 py-8 text-sm italic">この月のデータはありません</p>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="group flex justify-between items-center p-4 bg-white border border-slate-100 rounded-xl hover:border-blue-200 transition">
+                <div key={item.id} className="group flex justify-between items-center p-4 bg-white border border-slate-100 rounded-xl hover:border-blue-200 hover:shadow-md transition">
                   <div className="flex flex-col">
                     <span className="text-slate-700 font-medium">{item.title}</span>
                     <span className="text-[10px] text-slate-400">
