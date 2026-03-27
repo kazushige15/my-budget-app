@@ -80,7 +80,7 @@ export default function Home() {
           {mode === 'input' ? (
             <div className="space-y-8 animate-in fade-in duration-500">
               <div className="text-center py-10 bg-pink-100 rounded-3xl border-4 border-pink-200 shadow-inner">
-                <p className="text-xs text-pink-600 font-bold mb-2 uppercase tracking-widest">今月の残り</p>
+                <p className="text-xs text-pink-600 font-bold mb-2 uppercase tracking-widest">今月の収支</p>
                 <p className="text-5xl font-black text-pink-700">¥{totalBalance.toLocaleString()}</p>
               </div>
 
