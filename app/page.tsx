@@ -47,7 +47,7 @@ export default function Home() {
   }, [items])
 
   const addItem = async () => {
-    if (!title || !amount) return alert('入力してください')
+    if (!title || !amount) return alert('入力を忘れてるブー！')
     const { error } = await supabase
       .from('transactions')
       .insert([{ title, amount: Number(amount), created_at: new Date().toISOString() }])
@@ -65,14 +65,14 @@ export default function Home() {
   const totalBalance = items.reduce((sum, item) => sum + item.amount, 0)
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-4 sm:p-12 bg-pink-50 text-pink-950 font-mono">
+    <main className="flex min-h-screen flex-col items-center p-4 sm:p-12 bg-pink-50 text-pink-950 font-sans">
       <div className="bg-white rounded-[40px] shadow-2xl shadow-pink-200 w-full max-w-md overflow-hidden flex flex-col h-[90vh] border-4 border-pink-100">
         
-        {/* ヘッダー：pig-icon.png を表示 */}
+        {/* ヘッダー：支出整理整豚 */}
         <div className="bg-pink-500 p-6 text-white text-center border-b-4 border-pink-600">
           <h1 className="text-2xl font-black tracking-widest flex items-center justify-center gap-4">
-            <img src="/pig-icon.png" alt="Pig Icon" className="h-10 w-10 object-contain" />
-            PIGGY BANK
+            <img src="/pig-icon.png" alt="豚アイコン" className="h-10 w-10 object-contain" />
+            支出整理整豚
           </h1>
         </div>
 
@@ -80,42 +80,43 @@ export default function Home() {
           {mode === 'input' ? (
             <div className="space-y-8 animate-in fade-in duration-500">
               <div className="text-center py-10 bg-pink-100 rounded-3xl border-4 border-pink-200 shadow-inner">
-                <p className="text-xs text-pink-600 font-bold mb-2 uppercase tracking-widest">Balance</p>
+                <p className="text-xs text-pink-600 font-bold mb-2 uppercase tracking-widest">今月の残り</p>
                 <p className="text-5xl font-black text-pink-700">¥{totalBalance.toLocaleString()}</p>
               </div>
 
               <div className="space-y-4">
                 <input 
                   type="text" 
-                  placeholder="ITEM NAME" 
-                  className="w-full p-5 bg-white border-2 border-pink-200 rounded-full outline-none focus:ring-4 focus:ring-pink-300 placeholder:text-pink-200 transition text-center" 
+                  placeholder="なにに使った？" 
+                  className="w-full p-5 bg-white border-2 border-pink-200 rounded-full outline-none focus:ring-4 focus:ring-pink-300 placeholder:text-pink-200 transition text-center font-bold" 
                   value={title} 
                   onChange={(e) => setTitle(e.target.value)} 
                 />
                 <input 
                   type="number" 
-                  placeholder="AMOUNT" 
-                  className="w-full p-5 bg-white border-2 border-pink-200 rounded-full outline-none focus:ring-4 focus:ring-pink-300 placeholder:text-pink-200 transition text-center" 
+                  placeholder="いくら？" 
+                  className="w-full p-5 bg-white border-2 border-pink-200 rounded-full outline-none focus:ring-4 focus:ring-pink-300 placeholder:text-pink-200 transition text-center font-bold" 
                   value={amount} 
                   onChange={(e) => setAmount(e.target.value)} 
                 />
                 <button 
                   onClick={addItem} 
-                  className="w-full bg-pink-600 text-white py-5 rounded-full font-black text-lg shadow-lg shadow-pink-300 transition hover:bg-pink-700 active:scale-95 uppercase tracking-tighter"
+                  className="w-full bg-pink-600 text-white py-5 rounded-full font-black text-lg shadow-lg shadow-pink-300 transition hover:bg-pink-700 active:scale-95 tracking-widest"
                 >
-                  Save to Piggy
+                  貯金箱へ入れる
                 </button>
               </div>
             </div>
           ) : (
             <div className="space-y-6 animate-in slide-in-from-right duration-300">
               <div className="flex justify-between items-center py-3 px-4 bg-pink-50 rounded-full border-2 border-pink-100">
-                <button onClick={() => setViewMonth(v => v - 1)} className="p-2 text-pink-600 font-bold">Prev</button>
-                <span className="font-bold text-lg text-pink-900">{viewYear}/{viewMonth + 1}</span>
-                <button onClick={() => setViewMonth(v => v + 1)} className="p-2 text-pink-600 font-bold">Next</button>
+                <button onClick={() => setViewMonth(v => v - 1)} className="p-2 text-pink-600 font-bold">前月</button>
+                <span className="font-bold text-lg text-pink-900">{viewYear}年{viewMonth + 1}月</span>
+                <button onClick={() => setViewMonth(v => v + 1)} className="p-2 text-pink-600 font-bold">次月</button>
               </div>
 
               <div className="h-48 w-full bg-pink-50 rounded-3xl p-4 border-2 border-pink-100">
+                <p className="text-[10px] font-bold text-pink-400 mb-2 text-center">日ごとの動き</p>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#fbcfe8" />
@@ -150,12 +151,12 @@ export default function Home() {
         {/* 下部ナビゲーション */}
         <div className="bg-pink-50 border-t-4 border-pink-100 flex h-24">
           <button onClick={() => setMode('input')} className={`flex-1 flex flex-col items-center justify-center gap-1 ${mode === 'input' ? 'text-pink-600' : 'text-pink-300'}`}>
-            <span className="text-xs font-black uppercase tracking-tighter">Input</span>
-            <div className={`h-1.5 w-8 rounded-full mt-1 ${mode === 'input' ? 'bg-pink-600' : 'bg-transparent'}`} />
+            <span className="text-sm font-black tracking-widest">入力する</span>
+            <div className={`h-1.5 w-12 rounded-full mt-1 ${mode === 'input' ? 'bg-pink-600' : 'bg-transparent'}`} />
           </button>
           <button onClick={() => setMode('history')} className={`flex-1 flex flex-col items-center justify-center gap-1 ${mode === 'history' ? 'text-pink-600' : 'text-pink-300'}`}>
-            <span className="text-xs font-black uppercase tracking-tighter">Report</span>
-            <div className={`h-1.5 w-8 rounded-full mt-1 ${mode === 'history' ? 'bg-pink-600' : 'bg-transparent'}`} />
+            <span className="text-sm font-black tracking-widest">振り返る</span>
+            <div className={`h-1.5 w-12 rounded-full mt-1 ${mode === 'history' ? 'bg-pink-600' : 'bg-transparent'}`} />
           </button>
         </div>
       </div>
